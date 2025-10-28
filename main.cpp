@@ -1,10 +1,9 @@
-
-#include <iostream>
-#include <string>
-#include <map>
-#include <vector>
 #include <cairo/cairo.h>
-
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <map>  // Для std::map
+#include <vector>  // Для std::vector
 struct Node {
     std::string tag;
     std::map<std::string, std::string> attributes;
