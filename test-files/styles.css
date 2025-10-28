@@ -1,0 +1,10 @@
+.container {
+    width: 400px;
+    height: 200px;
+    background-color: lightblue;
+}
+
+p {
+    font-size: 20px;
+    color: green;
+}

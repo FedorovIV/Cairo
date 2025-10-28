@@ -1,5 +1,5 @@
 
-# Cairo HTML & CSS Mini Engine
+# Cairo HTML + CSS Mini Engine
 
 This project demonstrates a simple HTML + CSS layout engine using Cairo for rendering.
 
