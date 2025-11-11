@@ -27,3 +27,7 @@ Commands:
 ```
 g++ html_css_demo.cpp -o html_css_demo $(pkg-config --cflags --libs libcss) -lgumbo -Drestrict=
 ```
+
+```
+g++ main.cpp -o main $(pkg-config --cflags --libs libcss) -lgumbo -Drestrict=
+```
