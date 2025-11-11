@@ -21,3 +21,9 @@ This project demonstrates a simple HTML + CSS layout engine using Cairo for rend
    ./cairo_html_css_example
    ```
 4. The result will be saved as `output.png`.
+
+Commands:
+
+```
+g++ html_css_demo.cpp -o html_css_demo $(pkg-config --cflags --libs libcss) -lgumbo -Drestrict=
+```

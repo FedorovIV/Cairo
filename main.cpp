@@ -1,74 +1,48 @@
-#include <sstream>
-#include <fstream>
 #include <iostream>
-#include <stdexcept>
-#include <string>
-#include "HTMLParser.h"
-#include "CSSParser.h"
-#include "LayoutEngine.h"
-#include "Renderer.h"
+#include <gumbo.h>
+#include <cairo/cairo.h>
 
-std::string readHTMLFile(const std::string& filepath) {
-    std::ifstream file(filepath);
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
+void search_for_links(GumboNode* node) {
+    if (node->type != GUMBO_NODE_ELEMENT) return;
 
-std::string readCSSFile(const std::string& filepath) {
-    std::ifstream file(filepath);
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-void printNode(const Node& node, int level = 0) {
-    std::string indent(level * 2, ' ');
-    std::cout << indent << "Tag: " << node.tag << std::endl;
-    for (const auto& attribute : node.attributes) {
-        std::cout << indent << "  " << attribute.first << ": " << attribute.second << std::endl;
-    }
-    for (const auto& child : node.children) {
-        printNode(child, level + 1);
-    }
-}
-
-int main(int argc, char *argv[]) {
-
-    std::cout << "Output generated as output.png" << std::endl;
-
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <index.html> <styles.css>" << std::endl;
-        return 1;
+    GumboElement* el = &node->v.element;
+    if (el->tag == GUMBO_TAG_A) {
+        GumboAttribute* href = gumbo_get_attribute(&el->attributes, "href");
+        if (href)
+            std::cout << "Link: " << href->value << std::endl;
     }
 
-    std::string htmlFile = argv[1];
-    std::string cssFile = argv[2];
+    const GumboVector* children = &el->children;
+    for (unsigned int i = 0; i < children->length; ++i)
+        search_for_links(static_cast<GumboNode*>(children->data[i]));
+}
 
-    HTMLParser htmlParser;
-    CSSParser cssParser;
-    LayoutEngine layoutEngine;
-    Renderer renderer;
+int main() {
+    // --- Пример работы с gumbo ---
+    std::string html = R"(
+        <html><body>
+          <a href='https://example.com'>Example</a>
+          <a href='/local'>Local</a>
+        </body></html>
+    )";
+    GumboOutput* output = gumbo_parse(html.c_str());
+    search_for_links(output->root);
+    gumbo_destroy_output(&kGumboDefaultOptions, output);
 
-    // Читаем файлы
-    std::string html = readHTMLFile(htmlFile);
-    std::cout << "HTML content:" << std::endl;
-    std::cout << html << std::endl;
-    std::string css = readCSSFile(cssFile);
+    // --- Пример работы с Cairo ---
+    cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 100);
+    cairo_t* cr = cairo_create(surface);
+    cairo_set_source_rgb(cr, 0.2, 0.6, 0.9);
+    cairo_paint(cr);
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 24);
+    cairo_move_to(cr, 20, 60);
+    cairo_show_text(cr, "Hello, Cairo!");
+    cairo_destroy(cr);
+    cairo_surface_write_to_png(surface, "output.png");
+    cairo_surface_destroy(surface);
 
-    // Парсим HTML и CSS
-    Node root = htmlParser.parse(html);
-    printNode(root);
-
-    std::cout << "Parsing CSS" << std::endl;
-    cssParser.parse(css);
-
-    // Вычисляем layout
-    layoutEngine.calculate(root);
-
-    // Отрисовываем результат
-    renderer.render(root);
-
-    std::cout << "Output generated as output.png" << std::endl;
+    std::cout << "Saved image: output.png\n";
     return 0;
 }

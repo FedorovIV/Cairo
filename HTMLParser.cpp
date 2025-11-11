@@ -1,90 +1,42 @@
 #include "HTMLParser.h"
 #include <iostream>
-#include <regex>
+#include <cctype>
 #include <sstream>
 
-void HTMLParser::parseNode(const std::string& html, size_t& pos, Node& node) {
-    std::cout << "Parsing node at position " << pos << std::endl;
-
-    // Извлекаем имя тега
-    node.tag = extractTagName(html, pos);
-    std::cout << "Parsed tag: " << node.tag << std::endl;
-
-    // Извлекаем атрибуты тега
-    parseAttributes(html, pos, node);
-
-    // Если тег закрывается сразу, например, <img />, продолжаем
-    if (html[pos] == '/') {
-        pos += 2; // Пропускаем "/>"
-        return;
-    }
-
-    // Парсим дочерние элементы
-    while (pos < html.size()) {
-        // Пропускаем пробелы
-        if (html[pos] == ' ' || html[pos] == '\n' || html[pos] == '\t') {
-            pos++;
-            continue;
-        }
-
-        // Находим следующий тег
-        if (html[pos] == '<') {
-            pos++;  // Пропускаем '<'
-            if (html[pos] == '/') {  // Закрывающий тег
-                break;
-            }
-            Node childNode;
-            parseNode(html, pos, childNode);
-            node.children.push_back(childNode);
-        } else {
-            break;
-        }
-    }
-
-    if (html[pos] == '>') {
+std::string HTMLParser::parseTag(const std::string& html, size_t& pos) {
+    std::string tag;
+    
+    // Пропускаем все пробелы перед тегом
+    while (pos < html.size() && std::isspace(html[pos])) {
         pos++;
     }
-}
-
-std::string HTMLParser::extractTagName(const std::string& html, size_t& pos) {
-    // Пропускаем начальные пробелы, символы новой строки и табуляции
-    while (pos < html.size() && (html[pos] == ' ' || html[pos] == '\n' || html[pos] == '\t')) {
-        pos++;
-    }
-
-    // Если после пробела или новой строки мы не находим открывающего тега, выводим ошибку
-    if (pos >= html.size() || html[pos] != '<') {
-        std::cerr << "Error: Expected '<' at position " << pos << std::endl;
+    
+    if (html[pos] != '<') {
+        std::cerr << "Expected '<' at position " << pos << std::endl;
         return "";
     }
-
-    pos++;  // Пропускаем '<'
-
-    std::string tagName;
-    while (pos < html.size() && (isalnum(html[pos]) || html[pos] == '_')) {
-        tagName += html[pos++];
+    
+    pos++; // Пропускаем '<'
+    
+    // Читаем имя тега
+    while (pos < html.size() && std::isalnum(html[pos])) {
+        tag += html[pos++];
     }
 
-    if (tagName.empty()) {
-        std::cerr << "Error extracting tag name at position " << pos << std::endl;
-    }
-
-    std::cout << "Extracted tag name: " << tagName << std::endl;
-    return tagName;
+    return tag;
 }
 
 void HTMLParser::parseAttributes(const std::string& html, size_t& pos, Node& node) {
-    std::cout << "Parsing attributes at position " << pos << std::endl;
     while (pos < html.size() && html[pos] != '>' && html[pos] != '/') {
         // Пропускаем пробелы
-        if (html[pos] == ' ' || html[pos] == '\n' || html[pos] == '\t') {
+        if (html[pos] == ' ' || html[pos] == '\n' || html[pos] == '\t' || html[pos] == '\r') {
             pos++;
             continue;
         }
 
         // Извлекаем имя атрибута
         std::string attributeName;
-        while (pos < html.size() && isalnum(html[pos])) {
+        while (pos < html.size() && std::isalnum(html[pos])) {
             attributeName += html[pos++];
         }
 
@@ -102,32 +54,56 @@ void HTMLParser::parseAttributes(const std::string& html, size_t& pos, Node& nod
             }
             pos++;  // Пропускаем закрывающую "
             node.attributes[attributeName] = attributeValue;
-            std::cout << "Found attribute: " << attributeName << "=" << attributeValue << std::endl;
         }
+    }
+}
+
+void HTMLParser::parseNode(const std::string& html, size_t& pos, Node& node) {
+    node.tag = parseTag(html, pos);
+
+    // Парсим атрибуты
+    parseAttributes(html, pos, node);
+
+    // Пропускаем пробелы до закрывающего тега
+    while (pos < html.size() && (html[pos] == ' ' || html[pos] == '\n' || html[pos] == '\t')) {
+        pos++;
+    }
+
+    // Если тег закрывается сразу, например, <img />, продолжаем
+    if (html[pos] == '/') {
+        pos += 2; // Пропускаем "/>"
+        return;
+    }
+
+    // Парсим дочерние элементы
+    if (html[pos] == '>') {
+        pos++; // Пропускаем '>'
+    }
+
+    while (pos < html.size()) {
+        if (html[pos] == '<') {
+            // Пропускаем открывающий тег
+            pos++;
+            if (html[pos] == '/') {
+                break; // Закрывающий тег
+            }
+            Node childNode;
+            parseNode(html, pos, childNode);
+            node.children.push_back(childNode);
+        } else {
+            pos++;
+        }
+    }
+
+    // Пропускаем закрывающий тег
+    if (html[pos] == '<' && html[pos + 1] == '/') {
+        pos += 3 + node.tag.size(); // Пропускаем "</tag>"
     }
 }
 
 Node HTMLParser::parse(const std::string& html) {
     size_t pos = 0;
     Node root;
-    root.tag = "div";
-    root.attributes["class"] = "container";
-
-    // Парсим <p> теги
-    while (pos < html.size()) {
-        if (html[pos] == '<') {
-            pos++; // Пропускаем '<'
-            if (html[pos] == 'p') {
-                Node p;
-                p.tag = "p";
-                p.attributes["style"] = "font-size: 20px; color: red;";
-                root.children.push_back(p);
-                pos += 3; // Пропускаем "p>"
-            }
-        } else {
-            pos++;
-        }
-    }
-
+    parseNode(html, pos, root);
     return root;
 }

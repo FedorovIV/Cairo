@@ -5,21 +5,26 @@
 #include <map>
 #include <vector>
 
-// Структура для хранения информации о теге
+// Структура для хранения информации о теге HTML
 struct Node {
-    std::string tag;  // Тег
+    std::string tag;  // Имя тега, например "div", "p"
     std::map<std::string, std::string> attributes;  // Атрибуты тега
     std::vector<Node> children;  // Дочерние элементы
 };
 
-// Класс для парсинга HTML
 class HTMLParser {
 public:
-    Node parse(const std::string& html);  // Метод для парсинга HTML
-private:
-    void parseNode(const std::string& html, size_t& pos, Node& node);  // Метод для парсинга одного тега
-    void parseAttributes(const std::string& html, size_t& pos, Node& node);  // Метод для парсинга атрибутов
-    std::string extractTagName(const std::string& html, size_t& pos);  // Метод для извлечения имени тега
+    // Парсинг тега: извлекает имя тега
+    std::string parseTag(const std::string& html, size_t& pos);
+
+    // Парсинг атрибутов: извлекает атрибуты тега
+    void parseAttributes(const std::string& html, size_t& pos, Node& node);
+
+    // Парсинг узла: извлекает тег, атрибуты и дочерние элементы
+    void parseNode(const std::string& html, size_t& pos, Node& node);
+
+    // Главная функция для парсинга HTML строки
+    Node parse(const std::string& html);
 };
 
 #endif // HTMLPARSER_H
