@@ -1,47 +1,28 @@
 #include <gumbo.h>
-#include "libcss_headers.cpp"
-#include "find_headers.cpp"
 #include <cairo/cairo.h>
 #include <string.h>
 #include <vector>
 
-void parse_color(const char *hex, double *r, double *g, double *b)
-{
-    if (hex[0] == '#')
-        hex++;
-    unsigned int rgb = 0;
-    sscanf(hex, "%x", &rgb);
-    *r = ((rgb >> 16) & 0xFF) / 255.0;
-    *g = ((rgb >> 8) & 0xFF) / 255.0;
-    *b = (rgb & 0xFF) / 255.0;
-}
+#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/libcss-main/libcss_main.c"
+#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/find-headers/find_headers.cpp"
+#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/read-files/read_files.cpp"
+
+void parse_color(const char *hex, double *r, double *g, double *b);
 
 int main(void)
 {
-    const char css[] =
-        "h1 { color: blue } "
-        "h2 { color: #321; } "
-        "h4, h5 { color: #123456; }";
+    char *css = read_file_all("/mnt/c/programming/Cairo/cairo-gumbo-libcss/for-test/style.css", NULL);
+    char *html = read_file_all("/mnt/c/programming/Cairo/cairo-gumbo-libcss/for-test/index.html", NULL);
 
-    const char html[] =
-        "<html><body>"
-        "<h1>Hello</h1>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
+    if (!css || !html)
+    {
+        free(css);
+        free(html);
+        return 1;
+    }
 
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "<h2>World</h2>"
-        "<h3>!</h3>"
-        "</body></html>";
+    printf("CSS (фрагмент): %.60s\n", css);
+    printf("HTML (фрагмент): %.60s\n", html);
 
     // парсим HTML
     GumboOutput *output = gumbo_parse(html);
@@ -108,5 +89,19 @@ int main(void)
         free((void *)css_headers[i].tag);
     free(css_headers);
 
+    free(css);
+    free(html);
+
     return 0;
+}
+
+void parse_color(const char *hex, double *r, double *g, double *b)
+{
+    if (hex[0] == '#')
+        hex++;
+    unsigned int rgb = 0;
+    sscanf(hex, "%x", &rgb);
+    *r = ((rgb >> 16) & 0xFF) / 255.0;
+    *g = ((rgb >> 8) & 0xFF) / 255.0;
+    *b = (rgb & 0xFF) / 255.0;
 }

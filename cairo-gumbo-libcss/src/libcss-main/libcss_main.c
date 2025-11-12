@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-#include <string>
 /* The entire API is available through this header. */
 #include <libcss/libcss.h>
 
