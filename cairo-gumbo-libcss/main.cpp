@@ -3,9 +3,9 @@
 #include <string.h>
 #include <vector>
 
-#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/libcss-main/libcss_main.c"
-#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/find-headers/find_headers.cpp"
-#include "/mnt/c/programming/Cairo/cairo-gumbo-libcss/src/read-files/read_files.cpp"
+#include "read_files.h"
+#include "find_headers.h"
+#include "libcss_main.h"
 
 void parse_color(const char *hex, double *r, double *g, double *b);
 

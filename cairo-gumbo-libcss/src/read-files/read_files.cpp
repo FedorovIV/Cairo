@@ -5,7 +5,7 @@
  * Возвращает malloc-нутый указатель (нужно free()) или NULL при ошибке.
  * out_len опционален.
  */
-static char* read_file_all(const char* path, size_t* out_len) {
+char* read_file_all(const char* path, size_t* out_len) {
     FILE* f = fopen(path, "rb");
     if (!f) {
         fprintf(stderr, "Не удалось открыть файл: %s\n", path);
