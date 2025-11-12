@@ -395,6 +395,10 @@ header_color_t *get_headers_colors(const char *css_source, size_t *out_count)
 		if (code != CSS_OK)
 			die("css_computed_style_destroy", code);
 
+		char buf[16];
+		snprintf(buf, sizeof(buf), "h%d", hh);
+		results[hh - 1].tag = strdup(buf);
+		
 		if (color_type == CSS_COLOR_INHERIT)
 		{
 			strcpy(results[hh - 1].color, "inherit");
