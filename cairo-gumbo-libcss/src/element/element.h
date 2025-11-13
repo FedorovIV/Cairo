@@ -1,34 +1,25 @@
 #pragma once
-#include <cstddef>
-#include <utility>
+#include <string>
 
 class Element {
 public:
-    using coord_t = double;
+    Element(Element* parent = nullptr, double width = 0.0, double height = 0.0);
 
-    // Конструктор: parent может быть nullptr.
-    // width/height по умолчанию 0.
-    explicit Element(const Element* parent = nullptr,
-                     coord_t width = 0.0,
-                     coord_t height = 0.0) noexcept;
+    void set_position(double x, double y);
+    void set_size(double width, double height);
+    void set_color(const std::string& color);
+    void set_border_radius(double percent); // 0–100%
 
-    // Доступ к геометрии
-    coord_t x() const noexcept { return x_; }
-    coord_t y() const noexcept { return y_; }
-    coord_t width()  const noexcept { return width_; }
-    coord_t height() const noexcept { return height_; }
-
-    // Установка размеров и позиции (если понадобится вручную)
-    void set_position(coord_t x, coord_t y) noexcept { x_ = x; y_ = y; }
-    void set_size(coord_t w, coord_t h) noexcept { width_ = w; height_ = h; }
-
-    // Родитель (невладеющая ссылка)
-    const Element* parent() const noexcept { return parent_; }
+    double x() const;
+    double y() const;
+    double width() const;
+    double height() const;
+    const std::string& color() const;
+    double border_radius() const;
 
 private:
-    const Element* parent_ = nullptr;  // невладеющий указатель
-    coord_t x_ = 0.0;
-    coord_t y_ = 0.0;
-    coord_t width_  = 0.0;
-    coord_t height_ = 0.0;
+    Element* parent_;
+    double x_, y_, width_, height_;
+    double border_radius_; // от 0 до 100
+    std::string color_;    // по умолчанию "#000000"
 };
