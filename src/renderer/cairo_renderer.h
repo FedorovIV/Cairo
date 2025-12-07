@@ -5,7 +5,8 @@
 
 enum class OutputFormat {
     PNG,
-    SVG
+    SVG,
+    SVG_MEMORY,
 };
 
 class CairoRenderer {
@@ -14,7 +15,10 @@ public:
     ~CairoRenderer();
 
     void render(const Element& e);
-    void save(); // сохраняет результат в выбранный формат
+    void save();
+    void finish(); 
+    std::string get_svg() const { return svg_buffer_; };
+    std::string get_svg_string();
 
 private:
     cairo_surface_t* surface_;
@@ -22,4 +26,6 @@ private:
     int width_, height_;
     OutputFormat format_;
     std::string filename_;
+    bool isFinished_;
+    std::string svg_buffer_;
 };
