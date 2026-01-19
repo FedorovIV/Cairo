@@ -132,6 +132,13 @@ void CairoRenderer::render(const Element &e)
         double tx = x;
         double ty = y;
 
+        // Центрируем текст для кнопок
+        if (e.tag() == "button")
+        {
+            tx = x + (w - ext.width) / 2.0 - ext.x_bearing;
+            ty = y + (h - ext.height) / 2.0 - ext.y_bearing;
+        }
+
         cairo_move_to(cr_, tx, ty);
         cairo_show_text(cr_, e.text().c_str());
         cairo_stroke(cr_);

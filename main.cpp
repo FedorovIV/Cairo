@@ -56,6 +56,10 @@ std::string generate_svg_frame()
     text.set_text(input_text);
     renderer.render(text);
 
+    Button button("Send");
+    button.set_position(20, 270);
+    renderer.render(button);
+
     renderer.finish();
 
     return renderer.get_svg();
